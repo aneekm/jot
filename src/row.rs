@@ -5,6 +5,7 @@
 use std::cmp;
 use unicode_segmentation::UnicodeSegmentation;
 
+#[derive(Default)]
 pub struct Row {
     string: String,
     len: usize,
@@ -12,12 +13,10 @@ pub struct Row {
 
 impl From<&str> for Row {
     fn from(slice: &str) -> Self {
-        let mut row = Self {
+        Self {
             string: String::from(slice),
-            len: 0,
-        };
-        row.update_len();
-        row
+            len: slice.graphemes(true).count(),
+        }
     }
 }
 
@@ -48,7 +47,70 @@ impl Row {
         self.len == 0
     }
 
-    fn update_len(&mut self) {
-        self.len = self.string[..].graphemes(true).count();
+    pub fn insert(&mut self, at: usize, c: char) {
+        if at >= self.len() {
+            self.string.push(c);
+            self.len += 1;
+            return;
+        }
+        let mut result: String = String::new();
+        let mut length = 0;
+        for (index, grapheme) in self.string[..].graphemes(true).enumerate() {
+            length += 1;
+            if index == at {
+                length += 1;
+                result.push(c)
+            }
+            result.push_str(grapheme);
+        }
+        self.len = length;
+        self.string = result;
+    }
+
+    pub fn delete(&mut self, at: usize) {
+        if at >= self.len() {
+            return;
+        }
+        let mut result: String = String::new();
+        let mut length = 0;
+        for (index, grapheme) in self.string[..].graphemes(true).enumerate() {
+            if index != at {
+                length += 1;
+                result.push_str(grapheme)
+            }
+        }
+        self.len = length;
+        self.string = result;
+    }
+
+    pub fn append(&mut self, new: &Self) {
+        self.string = format!("{}{}", self.string, new.string);
+        self.len += new.len;
+    }
+
+    pub fn split(&mut self, at: usize) -> Self {
+        let mut row: String = String::new();
+        let mut length = 0;
+        let mut new_row: String = String::new();
+        let mut new_length = 0;
+        for (index, grapheme) in self.string[..].graphemes(true).enumerate() {
+            if index < at {
+                length += 1;
+                row.push_str(grapheme);
+            } else {
+                new_length += 1;
+                row.push_str(grapheme);
+            }
+        }
+        self.len = length;
+        self.string = row;
+        Self {
+            string: new_row,
+            len: new_length,
+        }
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        self.string.as_bytes()
     }
 }
