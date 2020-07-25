@@ -1,5 +1,5 @@
 /*
- * editor.rs contains the source code for the Terminal and Size structs
+ * terminal.rs contains the source code for the Terminal and Size structs
  *
  * The Terminal struct provides dimension information about the terminal jot
  * is running in, and a few associated functions for interacting with the
@@ -19,6 +19,7 @@ pub struct Size {
     pub width: u16,
     pub height: u16,
 }
+
 pub struct Terminal {
     size: Size,
     _stdout: RawTerminal<std::io::Stdout>,
